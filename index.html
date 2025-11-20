@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Comercio - Tenerife</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Panel Izquierdo - Buscador -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <h2>🔍 Buscador</h2>
+            </div>
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Buscar comercios..."
+                >
+            </div>
+            <div class="results-list" id="resultsList">
+                <p style="color: #999; text-align: center; margin-top: 20px;">
+                    Escribe para buscar comercios
+                </p>
+            </div>
+        </div>
+
+        <!-- Mapa -->
+        <div id="map"></div>
+
+        <!-- Panel Derecho - Filtros -->
+        <div class="right-panel">
+            <div class="panel-header">
+                <h2>🏷️ Categorías</h2>
+            </div>
+            <div class="filter-container" id="filterContainer">
+                <!-- Los filtros se generarán dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</body>
+</html>

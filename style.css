@@ -1,0 +1,209 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Panel izquierdo - Buscador */
+.left-panel {
+    width: 300px;
+    background: #fff;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    padding: 20px;
+    background: #2c3e50;
+    color: white;
+}
+
+.panel-header h2 {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.search-container {
+    padding: 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.results-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+}
+
+.result-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.result-item:hover {
+    background: #e9ecef;
+    transform: translateX(4px);
+}
+
+.result-item h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #2c3e50;
+}
+
+.result-item p {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Mapa central */
+#map {
+    flex: 1;
+    height: 100vh;
+}
+
+/* Panel derecho - Filtros */
+.right-panel {
+    width: 280px;
+    background: #fff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.filter-container {
+    padding: 20px;
+}
+
+.filter-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.filter-item {
+    margin-bottom: 10px;
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.filter-checkbox:hover {
+    background: #f8f9fa;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    margin-right: 10px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.filter-checkbox label {
+    cursor: pointer;
+    font-size: 14px;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.category-count {
+    font-size: 12px;
+    color: #6c757d;
+    margin-left: auto;
+}
+
+.clear-filters {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #495057;
+    transition: all 0.2s;
+}
+
+.clear-filters:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+    .left-panel,
+    .right-panel {
+        position: absolute;
+        height: 100vh;
+        z-index: 1001;
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+    }
+
+    .right-panel {
+        right: 0;
+        transform: translateX(100%);
+    }
+
+    .left-panel.active,
+    .right-panel.active {
+        transform: translateX(0);
+    }
+}
+
+/* Leaflet popup personalizado */
+.leaflet-popup-content-wrapper {
+    border-radius: 4px;
+}
+
+.popup-content h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.popup-content p {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
