@@ -16,24 +16,8 @@ addEventListener('DOMContentLoaded', () => {
 
     // Lista de archivos GeoJSON a cargar (cada archivo es una categoría)
     const geojsonFiles = [
-        'actividad',
-        'administracion',
-        'agricultura',
-        'alimentacion',
-        'ciudadania',
-        'comercio',
-        'demografia',
-        'deporte',
-        'educacion',
-        'hosteleria',
-        'industria',
-        'locales',
-        'medicina',
-        'otros',
-        'recursos_emprender',
-        'recursos_socioculturales',
-        'servicios',
-        'transporte'
+        // 'general',
+        'sample'
     ];
 
     // Procesar categorías
@@ -223,7 +207,17 @@ addEventListener('DOMContentLoaded', () => {
                                     properties[cleanKey] = feature.p[index];
                                 });
                                 properties.categoria = fileName; // Añadir categoría basada en el nombre del archivo
-                                properties.nombre = properties['idactividad,descripcion'] || properties.descripcion || 'Sin nombre';
+                                
+                                // Intentar obtener el nombre de diferentes campos posibles
+                                properties.nombre = properties.nombre || 
+                                                   properties['idactividad,descripcion'] || 
+                                                   properties.descripcion || 
+                                                   'Sin nombre';
+                                
+                                // Guardar descripción si existe
+                                if (!properties.descripcion && properties['idactividad,descripcion']) {
+                                    properties.descripcion = properties['idactividad,descripcion'];
+                                }
                                 
                                 return {
                                     type: 'Feature',
