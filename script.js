@@ -13,11 +13,15 @@ addEventListener('DOMContentLoaded', () => {
     let allFeatures = [];
     let categories = new Map();
     let activeFilters = new Set();
+    let heatmapLayer = null;
+    let heatmapData = [];
+    let isHeatmapActive = false;
+    let municipalBoundariesLayer = null;
+    let markerClusterGroup = null; // Grupo de clustering
 
     // Lista de archivos GeoJSON a cargar (cada archivo es una categoría)
     const geojsonFiles = [
-        // 'general',
-        'sample'
+        'general'
     ];
 
     // Procesar categorías
@@ -34,6 +38,7 @@ addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('filterContainer');
 
         let html = '<div class="filter-title">Seleccionar categorías:</div>';
+        html += `<div class="points-counter">Total: ${allFeatures.length} puntos</div>`;
 
         categories.forEach((count, category) => {
             const id = `category-${category.replace(/\s+/g, '-')}`;
@@ -76,6 +81,12 @@ addEventListener('DOMContentLoaded', () => {
     function filterMarkers() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
+        // Limpiar el grupo de clustering
+        if (markerClusterGroup) {
+            markerClusterGroup.clearLayers();
+        }
+
+        // Filtrar y añadir marcadores al grupo de clustering
         allMarkers.forEach((marker, index) => {
             const feature = allFeatures[index];
             const category = feature.properties.categoria || 'Sin categoría';
@@ -88,9 +99,7 @@ addEventListener('DOMContentLoaded', () => {
                 description.toLowerCase().includes(searchTerm);
 
             if (matchesFilter && matchesSearch) {
-                marker.addTo(map);
-            } else {
-                map.removeLayer(marker);
+                markerClusterGroup.addLayer(marker);
             }
         });
 
@@ -99,6 +108,18 @@ addEventListener('DOMContentLoaded', () => {
 
     // Mostrar marcadores
     function displayMarkers(features) {
+        // Crear el grupo de clustering con configuración optimizada
+        markerClusterGroup = L.markerClusterGroup({
+            chunkedLoading: true,
+            chunkInterval: 200, // Tiempo entre chunks para no bloquear la UI
+            chunkDelay: 50,
+            maxClusterRadius: 80, // Radio para agrupar marcadores
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            disableClusteringAtZoom: 17 // Deshabilitar clustering en zoom cercano
+        });
+
         features.forEach(feature => {
             // Verificar que tenga coordenadas válidas
             if (!feature.geometry || !feature.geometry.coordinates || 
@@ -122,9 +143,12 @@ addEventListener('DOMContentLoaded', () => {
                 `;
 
             marker.bindPopup(popupContent);
-            marker.addTo(map);
             allMarkers.push(marker);
+            markerClusterGroup.addLayer(marker); // Añadir al grupo de clustering
         });
+
+        // Añadir el grupo de clustering al mapa
+        map.addLayer(markerClusterGroup);
     }
 
     // Actualizar lista de resultados
@@ -186,6 +210,11 @@ addEventListener('DOMContentLoaded', () => {
 
     // Cargar GeoJSON
     async function loadAllGeoJSON() {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.classList.add('active');
+        }
+
         try {
             const promises = geojsonFiles.map(async (fileName) => {
                 try {
@@ -199,7 +228,12 @@ addEventListener('DOMContentLoaded', () => {
                     // Procesar el formato comprimido si existe
                     if (data.propertyKeys && data.features) {
                         return data.features
-                            .filter(f => f.g && f.g[0] !== null && f.g[1] !== null) // Filtrar features con coordenadas válidas
+                            .filter(f => {
+                                // La longitud está en p[15] (último elemento) y la latitud en g[1]
+                                const lng = f.p && f.p.length > 15 ? f.p[15] : null;
+                                const lat = f.g && f.g.length > 1 ? f.g[1] : null;
+                                return lng !== null && lat !== null && typeof lng === 'number' && typeof lat === 'number';
+                            })
                             .map(feature => {
                                 const properties = {};
                                 data.propertyKeys.forEach((key, index) => {
@@ -219,11 +253,15 @@ addEventListener('DOMContentLoaded', () => {
                                     properties.descripcion = properties['idactividad,descripcion'];
                                 }
                                 
+                                // Las coordenadas están en: lng = p[15], lat = g[1]
+                                const lng = feature.p[15];
+                                const lat = feature.g[1];
+                                
                                 return {
                                     type: 'Feature',
                                     geometry: {
                                         type: 'Point',
-                                        coordinates: [feature.g[0], feature.g[1]]
+                                        coordinates: [lng, lat]
                                     },
                                     properties: properties
                                 };
@@ -248,16 +286,125 @@ addEventListener('DOMContentLoaded', () => {
             const results = await Promise.all(promises);
             allFeatures = results.flat();
             
+            console.log(`Cargando ${allFeatures.length} puntos...`);
+            
             processCategories();
             displayMarkers(allFeatures);
             createFilterUI();
+
+            // Ocultar indicador de carga
+            if (loadingIndicator) {
+                loadingIndicator.classList.remove('active');
+            }
         } catch (error) {
             console.error('Error cargando GeoJSON:', error);
             alert('Error al cargar los datos del mapa');
+            
+            // Ocultar indicador de carga en caso de error
+            if (loadingIndicator) {
+                loadingIndicator.classList.remove('active');
+            }
         }
     }
 
     loadAllGeoJSON();
+
+    // Cargar límites municipales
+    async function loadMunicipalBoundaries() {
+        try {
+            const response = await fetch('geojson/municipal_boundaries.geojson');
+            const data = await response.json();
+            
+            municipalBoundariesLayer = L.geoJSON(data, {
+                style: {
+                    color: '#666',
+                    weight: 2,
+                    opacity: 0.6,
+                    fillColor: 'transparent',
+                    fillOpacity: 0
+                }
+            }).addTo(map);
+            
+            console.log('Municipal boundaries loaded');
+        } catch (error) {
+            console.error('Error loading municipal boundaries:', error);
+        }
+    }
+
+    // Cargar datos del heatmap
+    async function loadHeatmapData() {
+        try {
+            const response = await fetch('geojson/heatmap_data.geojson');
+            const data = await response.json();
+            
+            // Convertir desde GeoJSON a formato [[lat, lng, intensity], ...]
+            if (data.features && Array.isArray(data.features)) {
+                heatmapData = data.features.map(feature => {
+                    const coords = feature.geometry.coordinates;
+                    const intensity = feature.properties.intensity || 0.5;
+                    return [coords[1], coords[0], intensity]; // lat, lng, intensity
+                });
+            } else if (Array.isArray(data)) {
+                heatmapData = data.map(point => [point[0], point[1], point[2]]);
+            } else {
+                heatmapData = [];
+            }
+            
+            // Crear la capa de heatmap (pero no añadirla aún)
+            heatmapLayer = L.heatLayer(heatmapData, {
+                radius: 15,
+                blur: 10,
+                minOpacity: 0.4,
+                gradient: {
+                    0.0: '#0000ff',
+                    0.2: '#00ffff', 
+                    0.4: '#00ff00',
+                    0.6: '#ffff00',
+                    0.8: '#ff8000',
+                    1.0: '#ff0000'
+                }
+            });
+            
+            console.log('Heatmap data loaded:', heatmapData.length, 'points');
+        } catch (error) {
+            console.error('Error loading heatmap data:', error);
+        }
+    }
+
+    // Toggle heatmap
+    function toggleHeatmap() {
+        const button = document.getElementById('toggleHeatmap');
+        
+        if (!heatmapLayer) {
+            console.error('Heatmap layer not loaded yet');
+            return;
+        }
+        
+        if (isHeatmapActive) {
+            // Desactivar heatmap, mostrar marcadores
+            map.removeLayer(heatmapLayer);
+            if (markerClusterGroup) {
+                map.addLayer(markerClusterGroup);
+            }
+            button.classList.remove('active');
+            isHeatmapActive = false;
+        } else {
+            // Activar heatmap, ocultar marcadores
+            if (markerClusterGroup) {
+                map.removeLayer(markerClusterGroup);
+            }
+            heatmapLayer.addTo(map);
+            button.classList.add('active');
+            isHeatmapActive = true;
+        }
+    }
+
+    // Event listener para el botón de heatmap
+    document.getElementById('toggleHeatmap').addEventListener('click', toggleHeatmap);
+
+    // Cargar capas adicionales
+    loadMunicipalBoundaries();
+    loadHeatmapData();
 
     // Búsqueda
     document.getElementById('searchInput').addEventListener('input', (e) => {

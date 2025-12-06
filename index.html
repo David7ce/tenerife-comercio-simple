@@ -6,8 +6,10 @@
     <title>Mapa de Comercio - Tenerife</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
 </head>
 <body>
     <div class="container">
@@ -32,7 +34,18 @@
         </div>
 
         <!-- Mapa -->
-        <div id="map"></div>
+        <div id="map">
+            <div class="map-controls">
+                <button id="toggleHeatmap" class="map-control-btn" title="Mapa de Calor">
+                    🔥 Mapa de Calor
+                </button>
+            </div>
+            <!-- Indicador de carga -->
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="loading-spinner"></div>
+                <p>Cargando marcadores...</p>
+            </div>
+        </div>
 
         <!-- Panel Derecho - Filtros -->
         <div class="right-panel">
@@ -45,7 +58,11 @@
         </div>
     </div>
 
-    <!-- Leaflet JS -->
+    <!-- Leaflet JS - Must load before other scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

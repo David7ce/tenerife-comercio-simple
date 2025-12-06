@@ -73,14 +73,8 @@ Los archivos GeoJSON utilizan un formato comprimido:
 
 ```json
 {
-  "propertyKeys": ["clase", "mun", "nombre", "sigla", "dir", ...],
-  "features": [
-    {
-      "g": [longitude, latitude],
-      "p": [value1, value2, value3, ...]
-    }
-  ]
-}
+  "propertyKeys":["clase","mun","nombre","sigla","dir","num","ref","cp","web","email","tf","fax","fot","tar","act"],
+  "features":[{"g":[-16.69373535,28.38090818],"p":[1,38022,"Ayto Icod de Los Vinos Empresa Municipal","CL","Bandurria",0,"Pg Las Almenas",38434,0,0,922814436,0,"i063015",0,7]}]}
 ```
 
 - `propertyKeys`: Array con los nombres de las propiedades

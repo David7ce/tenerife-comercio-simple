@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mapa de Actividad de Transporte Público (Anual)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <style type="text/css">
+        #map { height: 80vh; width: 100%; }
+        .legend { background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .legend h4 { margin: 0 0 5px; color: #777; }
+        .color-gradient { width: 100%; height: 20px; background: linear-gradient(to right, rgb(0, 0, 255), rgb(0, 255, 0), rgb(255, 255, 0), rgb(255, 0, 0)); }
+        .labels { display: flex; justify-content: space-between; font-size: 10px; }
+    </style>
+</head>
+<body>
+
+<h2 style="text-align: center;">Mapa de Calor de 'Índice de Actividad de Parada de Transporte Público' (Anual)</h2>
+<p style="text-align: center; font-size: 12px;">Intensidad del calor representa el índice de actividad</p>
+
+<div id="map"></div>
+
+<script>
+    var tenerifeBounds = L.latLngBounds(
+        L.latLng(27.9, -16.9),  // Southwest corner
+        L.latLng(28.6, -16.1)   // Northeast corner
+    );
+
+    var map = L.map('map', {
+        center: [28.290508985037203, -16.556727772217936],
+        zoom: 10,
+        minZoom: 10,
+        maxZoom: 16,
+        maxBounds: tenerifeBounds,
+        maxBoundsViscosity: 1.0
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        bounds: tenerifeBounds,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    fetch('geojson/municipal_boundaries.geojson')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJson(data, {
+                style: function (feature) {
+                    return { color: 'black', weight: 1, fillOpacity: 0.1 };
+                },
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties && feature.properties.municipio_nombre) {
+                        layer.bindPopup('<b>Municipio:</b> ' + feature.properties.municipio_nombre);
+                    }
+                }
+            }).addTo(map);
+        });
+
+    fetch('geojson/heatmap_data.json')
+        .then(response => response.json())
+        .then(data => {
+            // Data is already in the correct format [lat, lng, intensity]
+            var heat = L.heatLayer(data, {
+                radius: 15,
+                blur: 10,
+                minOpacity: 0.4,
+                gradient: {
+                    0.0: '#0000ff',
+                    0.3: '#00ff00',
+                    0.6: '#ffff00',
+                    1.0: '#ff0000'
+                }
+            }).addTo(map);
+        });
+
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML = '<h4>Índice de Actividad</h4><div class="color-gradient"></div><div class="labels"><span>0.00</span><span>0.99</span></div>';
+        return div;
+    };
+    legend.addTo(map);
+
+</script>
+
+</body>
+</html>

@@ -89,6 +89,48 @@ body {
 #map {
     flex: 1;
     height: 100vh;
+    position: relative;
+}
+
+/* Map controls */
+.map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.map-control-btn {
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.map-control-btn:hover {
+    background: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.map-control-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #2980b9;
+}
+
+.map-control-btn.active:hover {
+    background: #2980b9;
 }
 
 /* Panel derecho - Filtros */
@@ -206,4 +248,98 @@ body {
     font-size: 13px;
     color: #666;
     margin-bottom: 4px;
+}
+/* Estilos personalizados para clusters */
+.marker-cluster-small {
+    background-color: rgba(52, 152, 219, 0.6);
+}
+
+.marker-cluster-small div {
+    background-color: rgba(52, 152, 219, 0.8);
+}
+
+.marker-cluster-medium {
+    background-color: rgba(241, 196, 15, 0.6);
+}
+
+.marker-cluster-medium div {
+    background-color: rgba(241, 196, 15, 0.8);
+}
+
+.marker-cluster-large {
+    background-color: rgba(231, 76, 60, 0.6);
+}
+
+.marker-cluster-large div {
+    background-color: rgba(231, 76, 60, 0.8);
+}
+
+.marker-cluster {
+    border-radius: 50%;
+}
+
+.marker-cluster div {
+    width: 30px;
+    height: 30px;
+    margin-left: 5px;
+    margin-top: 5px;
+    text-align: center;
+    border-radius: 50%;
+    font: 12px "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    color: white;
+    line-height: 30px;
+}
+
+/* Indicador de carga */
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    text-align: center;
+    display: none;
+}
+
+.loading-indicator.active {
+    display: block;
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-indicator p {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Contador de puntos */
+.points-counter {
+    background: #ecf0f1;
+    padding: 10px;
+    margin: 10px 20px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
 }
